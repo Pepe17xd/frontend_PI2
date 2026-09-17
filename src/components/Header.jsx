@@ -1,0 +1,1 @@
+export default function Header(){return <header className="hero"><div className="brand-mark">⌁</div><div><p className="eyebrow">AGRO · AI VISION</p><h1>Clasificador Inteligente de <em>Plátanos</em></h1><p>Sistema de clasificación mediante visión artificial y Machine Learning</p></div></header>}

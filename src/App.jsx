@@ -1,0 +1,6 @@
+import { useState } from "react";
+import Camera from "./components/Camera";
+import Header from "./components/Header";
+import ResultCard from "./components/ResultCard";
+import { predictBanana } from "./services/api";
+export default function App(){const[status,setStatus]=useState("waiting"),[result,setResult]=useState(null),[error,setError]=useState("");async function analyze(blob){setStatus("loading");setError("");setResult(null);try{const data=await predictBanana(blob);if(!data||(typeof data==="object"&&!Object.keys(data).length))throw Error("EMPTY");setResult(data);setStatus("complete")}catch(e){setStatus("error");setError(e.message==="EMPTY"?"No se obtuvo una predicción válida.":"No se pudo conectar con el modelo. Intenta nuevamente.")}}return <div className="app-shell"><main className="app-content"><Header/><section className="workspace"><Camera status={status} onAnalyze={analyze}/><ResultCard result={result} error={error} status={status}/></section></main><footer>Proyecto de clasificación mediante Inteligencia Artificial y Computer Vision</footer></div>}
