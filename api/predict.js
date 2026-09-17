@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://3.216.17.142:8000/predict";
+const BACKEND_URL = process.env.BACKEND_URL || "http://3.216.17.142:8000/predict";
 
 export const config = {
   api: {
@@ -28,11 +28,17 @@ export default async function handler(request, response) {
   }
 
   try {
-    // Se conserva el cuerpo multipart original: límite, nombre y bytes del archivo.
+    // Se conserva el cuerpo multipart original: boundary, metadatos y bytes del archivo.
     const body = await readRequestBody(request);
-    if (!body.length || !body.includes(Buffer.from('name="file"'))) {
+    if (!body.length || !body.includes(Buffer.from('name="image"'))) {
       return response.status(400).json({ error: "No se recibió ninguna imagen" });
     }
+
+    console.info("[predict proxy] Solicitud recibida", {
+      contentType,
+      bytes: body.length,
+      hasImageField: true,
+    });
 
     const backendResponse = await fetch(BACKEND_URL, {
       method: "POST",
@@ -41,9 +47,11 @@ export default async function handler(request, response) {
         accept: "application/json",
       },
       body,
+      signal: AbortSignal.timeout(25_000),
     });
 
     const result = await backendResponse.json();
+    console.info("[predict proxy] Respuesta del backend", { status: backendResponse.status });
     return response.status(backendResponse.status).json(result);
   } catch (error) {
     console.error("Error al comunicarse con la API de clasificación:", error);

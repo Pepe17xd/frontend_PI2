@@ -1,1 +1,28 @@
-export async function predictBanana(blob){const form=new FormData();form.append("file",blob,"platano.jpg");const response=await fetch("/api/predict",{method:"POST",body:form});if(!response.ok)throw Error("API_REQUEST_FAILED");try{return await response.json()}catch{throw Error("INVALID_RESPONSE")}}
+const debug = import.meta.env.DEV || import.meta.env.VITE_DEBUG_PREDICT === "true";
+
+export async function predictBanana(blob) {
+  const form = new FormData();
+  // El FastAPI desplegado actualmente declara UploadFile con el nombre "image".
+  form.append("image", blob, "platano.jpg");
+
+  if (debug) {
+    const image = form.get("image");
+    console.info("[predict] Enviando multipart", {
+      field: "image",
+      name: image?.name,
+      size: image?.size,
+      type: image?.type,
+      fields: [...form.keys()],
+    });
+  }
+
+  const response = await fetch("/api/predict", { method: "POST", body: form });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    console.error("[predict] Respuesta no exitosa", { status: response.status, payload });
+    throw Error(payload?.error || "API_REQUEST_FAILED");
+  }
+  if (!payload) throw Error("INVALID_RESPONSE");
+  return payload;
+}

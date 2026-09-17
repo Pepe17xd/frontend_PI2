@@ -8,6 +8,7 @@ export default defineConfig({
       "/api/predict": {
         target: "http://3.216.17.142:8000",
         changeOrigin: true,
+        timeout: 25_000,
       },
     },
   },
